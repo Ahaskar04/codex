@@ -1,0 +1,5 @@
+phidata
+openai 
+streamlit 
+python-dotenv 
+requests
