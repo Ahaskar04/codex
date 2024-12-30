@@ -17,10 +17,35 @@ if "conversation" not in st.session_state:
 if "stackoverflow_results" not in st.session_state:
     st.session_state.stackoverflow_results = []
 
+from urllib.parse import quote
+
+from urllib.parse import quote, urlencode
+
 def fetch_stackoverflow(query):
     base_url = "https://api.stackexchange.com"
-    path_url = f"/2.3/search/advanced?order=desc&sort=activity&q={query}&site=stackoverflow"
+    
+    # If the query is too long or looks like code, extract keywords
+    if len(query) > 150 or '\n' in query:
+        # Extract basic keywords if it's a code snippet
+        keywords = "python " + " ".join([
+            word for word in query.replace('\n', ' ')
+                              .replace('(', ' ')
+                              .replace(')', ' ')
+                              .replace('{', ' ')
+                              .replace('}', ' ')
+                              .replace(':', ' ')
+                              .split()
+            if not word.startswith(('import', 'from', 'def', '#'))
+            and not word in ['=', '+', '-', '*', '/', '%', '^']
+            and len(word) > 2
+        ])[:100]  # Limit length
+    else:
+        keywords = query
+
+    # Use the original working URL structure
+    path_url = f"/2.3/search/advanced?order=desc&sort=activity&q={keywords}&site=stackoverflow"
     url = base_url + path_url
+    
     try:
         response = requests.get(url)
         if response.status_code == 200:
@@ -36,9 +61,12 @@ def fetch_stackoverflow(query):
                 for item in data.get("items", [])
             ]
         else:
-            return f"Error fetching Stack Overflow data: {response.status_code}"
+            st.error(f"Error fetching Stack Overflow data: {response.status_code}")
+            return []
     except Exception as e:
-        return f"An error occurred: {str(e)}"
+        st.error(f"An error occurred: {str(e)}")
+        return []
+
 
 def generate_code_with_context(query, stackoverflow_answers):
     # Get conversation history
@@ -196,11 +224,15 @@ with current_response_container:
 with stackoverflow_container:
     if st.session_state.stackoverflow_results:
         st.write("### Relevant Stack Overflow Solutions")
-        for result in st.session_state.stackoverflow_results:
-            # st.markdown(f"**{result['title']}**")
-            st.markdown(f"[View Question]({result['link']})")
-            st.write(f"Answered: {result['is_answered']}, Score: {result['score']}")
-            st.write("---")
+        if isinstance(st.session_state.stackoverflow_results, list):  # Verify it's a list
+            for result in st.session_state.stackoverflow_results:
+                if isinstance(result, dict):  # Verify each item is a dictionary
+                    st.markdown(f"**{result.get('title', 'No title')}**")
+                    st.markdown(f"[View Question]({result.get('link', '#')})")
+                    st.write(f"Answered: {result.get('is_answered', 'N/A')}, Score: {result.get('score', 'N/A')}")
+                    st.write("---")
+        else:
+            st.error("Invalid Stack Overflow results format")
 
 # Display conversation history at the top
 with history_container:
