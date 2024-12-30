@@ -4,6 +4,8 @@
 
 The **Coding Assistant** application is a powerful tool built with Streamlit, leveraging advanced AI models to provide coding solutions, insights, and suggestions. By integrating Stack Overflow results, it offers contextual and optimized solutions, making it an indispensable tool for developers.
 
+Try it out now: [Coding Assistant Web App](https://stackflow.streamlit.app/) 🌐
+
 ---
 
 ## 🌟 Features
