@@ -128,15 +128,61 @@ with input_container:
     col1, col2 = st.columns([4, 1])
     
     with col1:
-        st.text_input(
+        st.text_area(
             "Ask your question:",
             key="input_text",
             label_visibility="collapsed",
-            on_change=handle_submit
+            height=150,  # Set a fixed height for the text area
+            placeholder="Enter your code or question here...",
+            help="Press Ctrl+Enter to submit"
         )
     
     with col2:
-        st.button("Submit", on_click=handle_submit, use_container_width=True)
+        # Align button to the top of the column to match text area
+        st.write("")  # Add some spacing
+        submit_button = st.button(
+            "Submit", 
+            on_click=handle_submit, 
+            use_container_width=True,
+            type="primary"  # Make the button more prominent
+        )
+
+# Add some CSS to style the text area
+st.markdown("""
+    <style>
+        /* Style the text area */
+        .stTextArea textarea {
+            font-family: monospace;
+            line-height: 1.4;
+            padding: 10px;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        /* Ensure code maintains formatting */
+        .stTextArea textarea {
+            word-wrap: normal !important;
+            overflow-x: scroll !important;
+        }
+        
+        /* Make the text area border more visible */
+        .stTextArea textarea {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        /* Add hover effect */
+        .stTextArea textarea:hover {
+            border-color: #999;
+        }
+        
+        /* Add focus effect */
+        .stTextArea textarea:focus {
+            border-color: #1f77b4;
+            box-shadow: 0 0 0 1px #1f77b4;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 # Display current response (if any) above the input
 with current_response_container:
@@ -151,7 +197,7 @@ with stackoverflow_container:
     if st.session_state.stackoverflow_results:
         st.write("### Relevant Stack Overflow Solutions")
         for result in st.session_state.stackoverflow_results:
-            st.markdown(f"**{result['title']}**")
+            # st.markdown(f"**{result['title']}**")
             st.markdown(f"[View Question]({result['link']})")
             st.write(f"Answered: {result['is_answered']}, Score: {result['score']}")
             st.write("---")
